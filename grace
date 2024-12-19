@@ -189,25 +189,50 @@ OrionLib:MakeNotification({
 })
 
 
--- Function to toggle see-through walls
-local function ToggleSeeThroughWalls(state)
-    if state then
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("BasePart") and v.CanCollide == true then
-                v.Transparency = 0.7 -- Make walls semi-transparent
-            end
+-- Track the toggle state globally
+local seeThroughWallsEnabled = false
+
+-- Function to set transparency for existing and new walls
+local function ApplySeeThroughWalls()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.CanCollide == true then
+            v.Transparency = 0.7
         end
+    end
+end
+
+-- Function to reset transparency for all walls
+local function ResetWallTransparency()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.CanCollide == true then
+            v.Transparency = 0
+        end
+    end
+end
+
+-- Function to toggle see-through walls dynamically
+local function ToggleSeeThroughWalls(state)
+    seeThroughWallsEnabled = state
+    if seeThroughWallsEnabled then
+        -- Apply transparency to existing walls
+        ApplySeeThroughWalls()
+
+        -- Listen for new walls being added
+        workspace.DescendantAdded:Connect(function(descendant)
+            if seeThroughWallsEnabled and descendant:IsA("BasePart") and descendant.CanCollide == true then
+                descendant.Transparency = 0.7
+            end
+        end)
+
         OrionLib:MakeNotification({
             Name = "See Through Walls",
             Content = "Walls are now semi-transparent.",
             Time = 3
         })
     else
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("BasePart") and v.CanCollide == true then
-                v.Transparency = 0 -- Reset walls to fully opaque
-            end
-        end
+        -- Reset all walls to fully opaque
+        ResetWallTransparency()
+
         OrionLib:MakeNotification({
             Name = "See Through Walls",
             Content = "Walls are back to normal.",
