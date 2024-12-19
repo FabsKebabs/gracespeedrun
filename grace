@@ -191,11 +191,15 @@ OrionLib:MakeNotification({
 
 -- Track the toggle state globally
 local seeThroughWallsEnabled = false
+local connection -- Connection for DescendantAdded
 
--- Function to set transparency for existing and new walls
+-- Function to apply transparency to walls
 local function ApplySeeThroughWalls()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
     for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.CanCollide == true then
+        if v:IsA("BasePart") and v.CanCollide == true and not v:IsDescendantOf(character) then
             v.Transparency = 0.7
         end
     end
@@ -203,9 +207,12 @@ end
 
 -- Function to reset transparency for all walls
 local function ResetWallTransparency()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
     for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.CanCollide == true then
-            v.Transparency = 0
+        if v:IsA("BasePart") and not v:IsDescendantOf(character) then
+            v.Transparency = 0 -- Reset transparency
         end
     end
 end
@@ -213,13 +220,19 @@ end
 -- Function to toggle see-through walls dynamically
 local function ToggleSeeThroughWalls(state)
     seeThroughWallsEnabled = state
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
     if seeThroughWallsEnabled then
         -- Apply transparency to existing walls
         ApplySeeThroughWalls()
 
         -- Listen for new walls being added
-        workspace.DescendantAdded:Connect(function(descendant)
-            if seeThroughWallsEnabled and descendant:IsA("BasePart") and descendant.CanCollide == true then
+        connection = workspace.DescendantAdded:Connect(function(descendant)
+            if seeThroughWallsEnabled 
+               and descendant:IsA("BasePart") 
+               and descendant.CanCollide == true 
+               and not descendant:IsDescendantOf(character) then
                 descendant.Transparency = 0.7
             end
         end)
@@ -232,6 +245,12 @@ local function ToggleSeeThroughWalls(state)
     else
         -- Reset all walls to fully opaque
         ResetWallTransparency()
+
+        -- Disconnect any existing connections
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
 
         OrionLib:MakeNotification({
             Name = "See Through Walls",
