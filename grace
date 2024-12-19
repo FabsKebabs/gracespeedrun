@@ -187,3 +187,41 @@ OrionLib:MakeNotification({
     ImageColor = Color3.fromRGB(0, 255, 0), -- Green icon for success
     Time = 5
 })
+
+
+-- Function to toggle see-through walls
+local function ToggleSeeThroughWalls(state)
+    if state then
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide == true then
+                v.Transparency = 0.7 -- Make walls semi-transparent
+            end
+        end
+        OrionLib:MakeNotification({
+            Name = "See Through Walls",
+            Content = "Walls are now semi-transparent.",
+            Time = 3
+        })
+    else
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide == true then
+                v.Transparency = 0 -- Reset walls to fully opaque
+            end
+        end
+        OrionLib:MakeNotification({
+            Name = "See Through Walls",
+            Content = "Walls are back to normal.",
+            Time = 3
+        })
+    end
+end
+
+-- Add See Through Walls Toggle to the Settings Tab
+SettingsTab:AddToggle({
+    Name = "See Through Walls",
+    Default = false,
+    Callback = function(state)
+        ToggleSeeThroughWalls(state)
+    end,
+    ToggleColor = Color3.fromRGB(128, 0, 128) -- Purple toggle for see-through walls
+})
