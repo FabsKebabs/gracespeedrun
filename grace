@@ -1,50 +1,44 @@
--- Load OrionLib
+
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/FabsKebabs/load/refs/heads/main/Source'))()
 
--- Ensure OrionLib loaded correctly
 if not OrionLib then
     warn("Failed to load OrionLib!")
     return
 end
 
--- Create Window with a colorful theme
 local Window = OrionLib:MakeWindow({
     Name = "Publoader-Grace Hacks",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "Pubzy_Configs",
     BackgroundColor = Color3.fromRGB(30, 30, 30),
-    TitleColor = Color3.fromRGB(255, 0, 255), -- Magenta title
+    TitleColor = Color3.fromRGB(255, 0, 255), 
 })
 
--- Create Main Tab with colorful icon
+
 local MainTab = Window:MakeTab({
     Name = "Main",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false,
-    TabColor = Color3.fromRGB(255, 165, 0), -- Orange color for main tab
+    TabColor = Color3.fromRGB(255, 165, 0), 
 })
 
--- Create Settings Tab with a different vibrant color
 local SettingsTab = Window:MakeTab({
     Name = "Settings",
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false,
-    TabColor = Color3.fromRGB(0, 255, 255), -- Cyan color for settings tab
+    TabColor = Color3.fromRGB(0, 255, 255), 
 })
 
--- Toggle State Variables
 local entityDestroyEnabled = false
 local leverMoveEnabled = false
 local lightingRemoved = false
 
--- Store Default Lighting Values
 local Lighting = game:GetService("Lighting")
 local defaultBrightness = Lighting.Brightness
 local defaultAmbient = Lighting.Ambient
 local defaultOutdoorAmbient = Lighting.OutdoorAmbient
 
--- Function to destroy certain entities
 local function ToggleEntityDestroy(state)
     entityDestroyEnabled = state
     if entityDestroyEnabled then
@@ -67,7 +61,6 @@ local function ToggleEntityDestroy(state)
     end
 end
 
--- Function to move levers to the player
 local function ToggleLeverMove(state)
     leverMoveEnabled = state
     if leverMoveEnabled then
@@ -98,12 +91,12 @@ local function ToggleLeverMove(state)
     end
 end
 
--- Function to toggle lighting
+
 local function ToggleLighting(state)
     lightingRemoved = state
     if lightingRemoved then
         Lighting.Brightness = 2 -- Increase brightness
-        Lighting.Ambient = Color3.new(1, 1, 1) -- White ambient lighting
+        Lighting.Ambient = Color3.new(1, 1, 1) 
         Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
         OrionLib:MakeNotification({
             Name = "Lighting Removed",
@@ -122,14 +115,14 @@ local function ToggleLighting(state)
     end
 end
 
--- Add Buttons to the Main Tab with colorful notifications
+
 MainTab:AddToggle({
     Name = "Destroy Entities (eye, elkman, etc.)",
     Default = false,
     Callback = function(state)
         ToggleEntityDestroy(state)
     end,
-    ToggleColor = Color3.fromRGB(255, 0, 0) -- Red toggle for destructive entities
+    ToggleColor = Color3.fromRGB(255, 0, 0) 
 })
 
 MainTab:AddToggle({
@@ -138,7 +131,7 @@ MainTab:AddToggle({
     Callback = function(state)
         ToggleLeverMove(state)
     end,
-    ToggleColor = Color3.fromRGB(0, 255, 0) -- Green toggle for auto-move levers
+    ToggleColor = Color3.fromRGB(0, 255, 0) 
 })
 
 MainTab:AddButton({
@@ -149,10 +142,10 @@ MainTab:AddButton({
             Content = "Smile GUI is under development.",
             Time = 3,
             Image = "rbxassetid://4483345998",
-            ImageColor = Color3.fromRGB(255, 105, 180) -- Hot pink icon color for smile
+            ImageColor = Color3.fromRGB(255, 105, 180) 
         })
     end,
-    ButtonColor = Color3.fromRGB(255, 105, 180) -- Hot pink button color
+    ButtonColor = Color3.fromRGB(255, 105, 180) 
 })
 
 MainTab:AddButton({
@@ -261,4 +254,281 @@ SettingsTab:AddToggle({
         ToggleSeeThroughWalls(state)
     end,
     ToggleColor = Color3.fromRGB(128, 0, 128) -- Purple toggle for see-through walls
+})
+
+
+
+
+
+
+
+-- Function to update TextLabels named "text" for keys and bricks separately
+local function UpdateTextLabelForKeyAndBrick(value, type)
+    -- Loop through all descendants in the game to find TextLabels named "text"
+    for _, child in pairs(game:GetDescendants()) do
+        -- Check if the child is a TextLabel and its name is "text"
+        if child:IsA("TextLabel") and child.Name == "text" then
+            -- Update the TextLabel based on the type (key or brick)
+            if type == "key" and child.Parent.Name == "Keys" then
+                child.Text = value -- Set the TextLabel's Text to the provided value for keys
+            elseif type == "brick" and child.Parent.Name == "Bricks" then
+                child.Text = value -- Set the TextLabel's Text to the provided value for bricks
+            end
+        end
+    end
+end
+
+-- Function to set the Key or Brick value independently
+local function SetKeyOrBrickValue(keyValue, brickValue)
+    -- Convert the input values to numbers
+    keyValue = tonumber(keyValue) or 0
+    brickValue = tonumber(brickValue) or 0
+
+    -- If keyValue is provided, update keys only
+    if keyValue > 0 then
+        UpdateTextLabelForKeyAndBrick(tostring(keyValue), "key")
+        OrionLib:MakeNotification({
+            Name = "Key Giver",
+            Content = "Keys set to " .. tostring(keyValue),
+            Time = 3
+        })
+    end
+
+    -- If brickValue is provided, update bricks only
+    if brickValue > 0 then
+        UpdateTextLabelForKeyAndBrick(tostring(brickValue), "brick")
+        OrionLib:MakeNotification({
+            Name = "Brick Giver",
+            Content = "Bricks set to " .. tostring(brickValue),
+            Time = 3
+        })
+    end
+
+    -- If no values were entered, show an error
+    if keyValue <= 0 and brickValue <= 0 then
+        OrionLib:MakeNotification({
+            Name = "Error",
+            Content = "Please enter a valid key or brick value.",
+            Time = 3
+        })
+    end
+end
+
+
+
+-- Auto-submit when focus is lost (i.e., when user clicks away)
+SettingsTab:AddTextbox({
+    Name = "Bricks:", -- For auto-submit Bricks input
+    Default = "",
+    TextDisappear = true,
+    Callback = function(value)
+        brickAmount = value
+        SetKeyOrBrickValue(keyAmount, brickAmount) -- Automatically apply values when focus is lost
+    end,
+    FocusLostCallback = function(value)
+        brickAmount = value
+        SetKeyOrBrickValue(keyAmount, brickAmount) -- Automatically apply values when focus is lost
+    end
+})
+
+SettingsTab:AddTextbox({
+    Name = "Keys:", -- For auto-submit Keys input
+    Default = "",
+    TextDisappear = true,
+    Callback = function(value)
+        keyAmount = value
+        SetKeyOrBrickValue(keyAmount, brickAmount) -- Automatically apply values when focus is lost
+    end,
+    FocusLostCallback = function(value)
+        keyAmount = value
+        SetKeyOrBrickValue(keyAmount, brickAmount) -- Automatically apply values when focus is lost
+    end
+})
+
+
+-- Variable to store the toggle state
+local removeIcons = false
+
+-- Function to hide or show player icons (BillboardGuis)
+local function TogglePlayerIconsVisibility()
+    -- Loop through all players in the game
+    for _, player in pairs(game.Players:GetPlayers()) do
+        -- Wait for the player's character and check for any BillboardGui objects
+        local character = player.Character or player.CharacterAdded:Wait()
+        
+        -- Loop through all the parts and find any BillboardGuis
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BillboardGui") then
+                part.Enabled = not removeIcons -- Toggle the visibility of the BillboardGui
+            end
+        end
+    end
+end
+
+-- Add a new section for the "Remove Icons" toggle in the settings
+SettingsTab:AddToggle({
+    Name = "Remove Icons", -- Toggle text
+    Default = false, -- Default state of the toggle
+    Callback = function(state)
+        removeIcons = state -- Store the toggle state
+        TogglePlayerIconsVisibility() -- Apply visibility change based on toggle state
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+-- Create Misc Tab with its own color and icon
+local MiscTab = Window:MakeTab({
+    Name = "Misc",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false,
+    TabColor = Color3.fromRGB(255, 0, 255), -- Magenta color for misc tab
+})
+
+-- Function to change Walk Speed
+local function SetWalkSpeed(value)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:WaitForChild("Humanoid") -- Ensure Humanoid is loaded before accessing it
+    local humanoid = character.Humanoid
+    humanoid.WalkSpeed = value
+end
+
+-- Variable to store the current WalkSpeed (from the slider)
+local DefaultWalkSpeed = 16  -- Default value
+local BoostedWalkSpeed = DefaultWalkSpeed  -- Initial WalkSpeed value
+
+-- Add Walk Speed Slider to Misc Tab
+local walkSpeedSlider = MiscTab:AddSlider({
+    Name = "Walk Speed",
+    Min = 16,
+    Max = 200,
+    Default = DefaultWalkSpeed,
+    Color = Color3.fromRGB(255, 255, 0), -- Yellow color for the slider
+    Increment = 1,
+    Callback = function(value)
+        BoostedWalkSpeed = value  -- Store the new WalkSpeed from the slider
+        SetWalkSpeed(value)       -- Set WalkSpeed immediately when the slider value changes
+    end
+})
+
+-- Continuously maintain Walk Speed value to lock it in place
+game:GetService("RunService").Heartbeat:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = BoostedWalkSpeed  -- Keeps the WalkSpeed constant based on slider
+    end
+end)
+
+-- Add Reset Walk Speed Button to Misc Tab
+MiscTab:AddButton({
+    Name = "Reset Walk Speed",
+    Callback = function()
+        BoostedWalkSpeed = DefaultWalkSpeed  -- Reset WalkSpeed to default value (16)
+        SetWalkSpeed(BoostedWalkSpeed)  -- Apply the reset value to the character
+        walkSpeedSlider:SetValue(DefaultWalkSpeed)  -- Reset the slider value to default
+    end
+})
+
+-- Notify that the Reset Walk Speed button is added
+OrionLib:MakeNotification({
+    Name = "Walk Speed Reset",
+    Content = "The Walk Speed has been reset to default!",
+    Image = "rbxassetid://4483345998",  -- Notification icon
+    ImageColor = Color3.fromRGB(255, 255, 0),  -- Yellow notification icon
+    Time = 3
+})
+
+-- Function to change Gravity
+local function SetGravity(value)
+    game.Workspace.Gravity = value
+end
+
+-- Variable to store the current Gravity (from the slider)
+local DefaultGravity = 196.2  -- Default gravity value (normal gravity)
+
+-- Add Gravity Slider to Misc Tab
+local gravitySlider = MiscTab:AddSlider({
+    Name = "Gravity",
+    Min = 0,
+    Max = 1000, -- Max value to allow flying
+    Default = DefaultGravity, -- Default gravity value (normal gravity)
+    Color = Color3.fromRGB(255, 165, 0), -- Orange color for the slider
+    Increment = 1,
+    Callback = function(value)
+        SetGravity(value)
+    end
+})
+
+-- Add Reset Gravity Button to Misc Tab
+MiscTab:AddButton({
+    Name = "Reset Gravity",
+    Callback = function()
+        SetGravity(DefaultGravity)  -- Reset Gravity to default value (196.2)
+        gravitySlider:SetValue(DefaultGravity)  -- Reset the slider value to default
+    end
+})
+
+-- Notify that the Reset Gravity button is added
+OrionLib:MakeNotification({
+    Name = "Gravity Reset",
+    Content = "Gravity has been reset to the default value!",
+    Image = "rbxassetid://4483345998",  -- Notification icon
+    ImageColor = Color3.fromRGB(255, 165, 0),  -- Orange notification icon
+    Time = 3
+})
+
+
+
+-- Function to toggle Day Mode (formerly Night Mode)
+local function ToggleDayMode(state)
+    if state then
+        game.Lighting.TimeOfDay = "14:00:00" -- Set to noon (daytime)
+        game.Lighting.Ambient = Color3.fromRGB(255, 255, 255) -- Default ambient light
+    else
+        game.Lighting.TimeOfDay = "00:00:00" -- Set to midnight
+        game.Lighting.Ambient = Color3.fromRGB(50, 50, 50) -- Darker ambient light
+    end
+end
+
+-- Add Day Mode Toggle to Misc Tab
+MiscTab:AddToggle({
+    Name = "Day Mode",
+    Default = false,
+    Callback = function(state)
+        ToggleDayMode(state)
+    end
+})
+
+-- Function to reset the character
+local function ResetCharacter()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    character:BreakJoints() -- This will reset the character
+end
+
+MiscTab:AddButton({
+    Name = "Reset Character",
+    Callback = function()
+        ResetCharacter()
+    end
+})
+
+OrionLib:MakeNotification({
+    Name = "Misc Tab Loaded",
+    Content = "Walk Speed, Gravity, Day Mode, and Reset Character added!",
+    Image = "rbxassetid://4483345998",
+    ImageColor = Color3.fromRGB(255, 0, 255), -- Pink notification icon
+    Time = 3
 })
